@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="A&T logo.png">
+  <title>Inventory Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      padding: 0 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f6f8fc;
+    }
+
+    .login_form {
+      width: 100%;
+      max-width: 435px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 41px 30px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo {
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+    }
+
+    .logo img {
+      max-width: 160px;
+      height: auto;
+      display: inline-block;
+    }
+
+    .login_form .login_option {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .login_form .login_option .option {
+      width: calc(100% / 2 - 12px);
+    }
+
+    .login_form .login_option .option a {
+      height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      background: #F8F8FB;
+      border: 1px solid #DADAF2;
+      border-radius: 10px;
+      margin: 34px 0 24px 0;
+      text-decoration: none;
+      color: #171645;
+      font-weight: 500;
+      transition: 0.2s ease;
+    }
+
+    .login_form .login_option .option a:hover {
+      background: #ededf5;
+      border-color: #f7b217;
+    }
+
+    .login_form p {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .login_form .separator {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .login_form .separator span {
+      background: #fff;
+      z-index: 1;
+      padding: 0 10px;
+      position: relative;
+    }
+
+    .login_form .separator::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      left: 0;
+      height: 1px;
+      background: #C2C2C2;
+      display: block;
+    }
+
+    form .input_box label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    form .input_box input {
+      width: 100%;
+      height: 57px;
+      border: 1px solid #DADAF2;
+      border-radius: 10px;
+      outline: none;
+      background: #F8F8FB;
+      font-size: 17px;
+      padding: 0 50px 0 20px;
+      margin-bottom: 25px;
+      transition: 0.2s ease;
+    }
+
+    form .input_box input:focus {
+      border-color: #f7b217;
+    }
+
+    form .input_box .password_title {
+      display: flex;
+      justify-content: space-between;
+      text-align: center;
+    }
+
+    form .input_box {
+      position: relative;
+    }
+
+    .toggle_password {
+      position: absolute;
+      right: 16px;
+      bottom: 41px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #888;
+      font-size: 18px;
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 0;
+      transition: color 0.2s ease;
+    }
+
+    .toggle_password:hover {
+      color: #f7b217;
+      background: none;
+    }
+
+    a {
+      text-decoration: none;
+      color: #f7b217;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .option a i {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+
+    form button {
+      width: 100%;
+      height: 56px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: #ffcc3f;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 500;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-bottom: 28px;
+      transition: 0.3s ease;
+    }
+
+    form button:hover {
+      background: #f7b217;
+    }
+
+    .login_form .login_option .option a.active {
+      background: #ededf5;
+      border-color: #f7b217;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login_form">
+    <form action="#">
+      <div class="logo">
+        <img src="black.png" alt="Company Logo" />
+      </div>
+
+      <div class="login_option">
+        <div class="option">
+          <a href="#" id="userBtn" class="active">
+            <i class="fa-solid fa-user"></i>
+            <span>User</span>
+          </a>
+        </div>
+
+        <div class="option">
+          <a href="#" id="adminBtn">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Admin</span>
+          </a>
+        </div>
+      </div>
+
+      <p class="separator">
+        <span id="loginType">User Login</span>
+      </p>
+
+      <div class="input_box">
+        <label for="username" id="nameLabel">User Name</label>
+        <input type="text" id="username" placeholder="Enter User Name" required />
+      </div>
+
+      <div class="input_box hidden" id="passwordBox">
+        <div class="password_title">
+          <label for="password">Password</label>
+          <a href="#"></a>
+        </div>
+        <input type="password" id="password" placeholder="Enter your password" />
+        <button type="button" class="toggle_password" id="togglePassword" tabindex="-1">
+          <i class="fa-solid fa-eye" id="eyeIcon"></i>
+        </button>
+      </div>
+
+      <button type="submit" id="submitBtn">Continue</button>
+
+      <p class="sign_up">Get started by Login your account</p>
+    </form>
+  </div>
+
+<script>
+
+/* ============================= */
+/* SESSION PERSISTENCE CHECK     */
+/* ============================= */
+/* On app launch, if already logged in → skip login page */
+(function() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isAdmin    = localStorage.getItem("isAdmin")    === "true"; // ✅ localStorage for persistence
+  if (isLoggedIn) {
+    if (isAdmin) {
+      window.location.replace("Admin Dashboard.html");
+    } else {
+      window.location.replace("A&Tuser.html");
+    }
+  }
+})();
+
+/* ============================= */
+/* ELEMENTS */
+/* ============================= */
+
+const userBtn        = document.getElementById("userBtn");
+const adminBtn       = document.getElementById("adminBtn");
+const passwordBox    = document.getElementById("passwordBox");
+const nameLabel      = document.getElementById("nameLabel");
+const usernameInput  = document.getElementById("username");
+const passwordInput  = document.getElementById("password");
+const loginType      = document.getElementById("loginType");
+const submitBtn      = document.getElementById("submitBtn");
+const togglePassword = document.getElementById("togglePassword");
+const eyeIcon        = document.getElementById("eyeIcon");
+
+let mode = "user";
+
+/* ============================= */
+/* MODE SWITCH */
+/* ============================= */
+
+function setUserMode() {
+  mode = "user";
+  userBtn.classList.add("active");
+  adminBtn.classList.remove("active");
+  passwordBox.classList.add("hidden");
+  nameLabel.textContent         = "User Name";
+  usernameInput.placeholder     = "Enter User Name";
+  loginType.textContent         = "User Login";
+  submitBtn.textContent         = "Continue";
+  passwordInput.required        = false;
+  passwordInput.value           = "";
+  passwordInput.type            = "password";
+  eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+}
+
+function setAdminMode() {
+  mode = "admin";
+  adminBtn.classList.add("active");
+  userBtn.classList.remove("active");
+  passwordBox.classList.remove("hidden");
+  nameLabel.textContent     = "Admin Name";
+  usernameInput.placeholder = "Enter Admin Name";
+  loginType.textContent     = "Admin Login";
+  submitBtn.textContent     = "Login";
+  passwordInput.required    = true;
+}
+
+/* ============================= */
+/* BUTTON EVENTS */
+/* ============================= */
+
+userBtn.addEventListener("click", (e) => { e.preventDefault(); setUserMode(); });
+adminBtn.addEventListener("click", (e) => { e.preventDefault(); setAdminMode(); });
+
+/* ============================= */
+/* EYE TOGGLE */
+/* ============================= */
+
+togglePassword.addEventListener("click", () => {
+  const isHidden = passwordInput.type === "password";
+  passwordInput.type = isHidden ? "text" : "password";
+  eyeIcon.classList.toggle("fa-eye",       !isHidden);
+  eyeIcon.classList.toggle("fa-eye-slash",  isHidden);
+});
+
+/* ============================= */
+/* ENTER KEY */
+/* ============================= */
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") submitBtn.click();
+});
+
+/* ============================= */
+/* APPS SCRIPT URL */
+/* ============================= */
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHKe7HT-iKoM3sXoqa8ZWjNuBC1c1Ms6HZfhx6ERNsPpCR7X7Ap7DTEMLkgb3LT54jDg/exec";
+
+/* ============================= */
+/* LOGIN */
+/* ============================= */
+
+submitBtn.addEventListener("click", async function(e) {
+  e.preventDefault();
+
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  /* USER LOGIN */
+  if (mode === "user") {
+    if (username === "") { alert("Please enter your name"); return; }
+
+    // ✅ Store session in localStorage (persists across app restarts)
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("isAdmin",    "false");
+    localStorage.setItem("userName",   username);
+    window.location.replace("A&Tuser.html");
+  }
+
+  /* ADMIN LOGIN */
+  else if (mode === "admin") {
+    if (username === "" || password === "") { alert("Enter Admin credentials"); return; }
+
+    try {
+      submitBtn.disabled    = true;
+      submitBtn.textContent = "Checking...";
+
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+      });
+      const result = await response.json();
+
+      if (result.status === "success") {
+        // ✅ Store session in localStorage (persists across app restarts)
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("isAdmin",    "true");
+        localStorage.setItem("adminName",  username);
+        window.location.replace("Admin Dashboard.html");
+      } else {
+        alert("Invalid Admin Credentials");
+      }
+    } catch (error) {
+      alert("Server error. Try again.");
+      console.error(error);
+    } finally {
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Login";
+    }
+  }
+});
+
+</script>
+</body>
+</html>
