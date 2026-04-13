@@ -10,7 +10,8 @@ if (localStorage.getItem("isLoggedIn") !== "true") {
 // ⚙️ CONFIG
 // ===================================
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHKe7HT-iKoM3sXoqa8ZWjNuBC1c1Ms6HZfhx6ERNsPpCR7X7Ap7DTEMLkgb3LT54jDg/exec";
+const SCRIPT_URL       = "https://script.google.com/macros/s/AKfycbzHKe7HT-iKoM3sXoqa8ZWjNuBC1c1Ms6HZfhx6ERNsPpCR7X7Ap7DTEMLkgb3LT54jDg/exec";
+const USER_SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbyt9-ULLPxkUAoXra8E9MU657kdhGGYLGUrfA_aEXNOnvhVp4xhowi8oSSzaTHe2uzl/exec";
 
 const SHEETS = {
   atStocks:   "A&T - Current Stock",
@@ -31,6 +32,13 @@ const dataFingerprints = {
 };
 
 // ===================================
+// 🔒 SESSION WATCHER CONFIG
+// ===================================
+
+const SESSION_CHECK_INTERVAL_MS = 5000;  // 5 seconds
+let sessionWatcherId = null;
+
+// ===================================
 // GLOBAL STATE
 // ===================================
 
@@ -44,17 +52,10 @@ const cachedData = {
   averStocks: null
 };
 
-// Popup data store — survives DOM redraws
 let popupStore = [];
 function storeForPopup(data) { popupStore.push(data); return popupStore.length - 1; }
 function clearPopupStore()   { popupStore = []; }
 
-// ───────────────────────────────────
-// POPUP NAVIGATION STACK
-// Each entry is the innerHTML of .inventory-popup-box at that level.
-// pushPopup() saves current level before replacing it.
-// popupBack() restores the previous level.
-// ───────────────────────────────────
 let popupStack = [];
 
 // ===================================
@@ -64,24 +65,13 @@ let popupStack = [];
 let backPressCount = 0;
 let backPressTimer = null;
 
-/**
- * Central handler for the hardware back button.
- *
- * Priority order:
- *   1. If the EXIT confirmation modal is open → do nothing (let its own buttons handle it)
- *   2. If the inventory popup is open → navigate within it (popupBack / closePopup)
- *   3. Otherwise → count toward exit; on 4th press show the exit confirmation modal
- */
 function handleHardwareBack() {
-  // 1. If exit-confirmation modal is already showing, absorb the press silently.
   const exitModal = document.getElementById("exitConfirmModal");
   if (exitModal && exitModal.classList.contains("active")) {
-    // Re-push so the next popstate fires correctly
     window.history.pushState(null, null, window.location.href);
     return;
   }
 
-  // 2. If inventory popup is open, navigate within it first.
   const overlay = document.getElementById("inventoryPopup");
   if (overlay && overlay.classList.contains("active")) {
     if (popupStack.length > 0) {
@@ -89,36 +79,30 @@ function handleHardwareBack() {
     } else {
       closePopup();
     }
-    // Reset exit counter whenever the popup absorbs a press
     backPressCount = 0;
     clearTimeout(backPressTimer);
     return;
   }
 
-  // 3. No popup open — count toward exit (need 4 presses to show modal)
   backPressCount++;
   clearTimeout(backPressTimer);
 
   const remaining = 4 - backPressCount;
 
   if (backPressCount >= 4) {
-    // Show the exit confirmation modal instead of exiting immediately
     backPressCount = 0;
     clearTimeout(backPressTimer);
     showExitConfirmModal();
     return;
   }
 
-  // Show a subtle toast hint
   showExitToast(
     remaining === 1
       ? "Press back once more to exit"
       : `Press back ${remaining} more times to exit`
   );
 
-  // Reset counter after 2.5 s of inactivity
   backPressTimer = setTimeout(() => { backPressCount = 0; }, 2500);
-
   window.history.pushState(null, null, window.location.href);
 }
 
@@ -126,17 +110,13 @@ function handleHardwareBack() {
 // EXIT CONFIRMATION MODAL
 // ===================================
 
-/**
- * Creates (once) and shows a modal that asks "Are you sure you want to exit?"
- * Confirm → exits the app.  Cancel → stays in the app.
- */
 function showExitConfirmModal() {
   let modal = document.getElementById("exitConfirmModal");
 
   if (!modal) {
     modal = document.createElement("div");
     modal.id        = "exitConfirmModal";
-    modal.className = "logout-modal"; // reuse existing modal styles
+    modal.className = "logout-modal";
     modal.innerHTML = `
       <div class="logout-box">
         <h3>Exit App</h3>
@@ -148,7 +128,6 @@ function showExitConfirmModal() {
       </div>`;
     document.body.appendChild(modal);
 
-    // Tap outside the box → cancel
     modal.addEventListener("click", (e) => {
       if (e.target === modal) hideExitConfirmModal();
     });
@@ -159,29 +138,27 @@ function showExitConfirmModal() {
       hideExitConfirmModal();
       allowNavigation = true;
       stopRealTimeSync();
-      // Exit the app
+      stopSessionWatcher();          // ← stop watcher on exit
       if (window.Android && typeof window.Android.exitApp === "function") {
         window.Android.exitApp();
       } else {
-        history.go(-1); // fallback for browser testing
+        history.go(-1);
       }
     });
   }
 
   modal.classList.add("active");
-  // Push a state so that a back press while the modal is open is absorbed
   window.history.pushState(null, null, window.location.href);
 }
 
 function hideExitConfirmModal() {
   const modal = document.getElementById("exitConfirmModal");
   if (modal) modal.classList.remove("active");
-  // Re-push so the next hardware back press fires popstate correctly
   window.history.pushState(null, null, window.location.href);
 }
 
 // ===================================
-// EXIT TOAST  (hint counter)
+// EXIT TOAST
 // ===================================
 
 function showExitToast(msg) {
@@ -246,7 +223,120 @@ document.addEventListener("DOMContentLoaded", function () {
   initBackControl();
   loadView("at-stocks");
   startRealTimeSync();
+  startSessionWatcher();    // ← start 5-second access check
 });
+
+// ===================================
+// 🔒 SESSION WATCHER
+// Pings USER_SCRIPT_URL every 5 seconds.
+// If admin sets status → Denied or removes
+// the employee from the sheet, the user sees
+// a "Session Ended" overlay and is redirected
+// to the login page within 3 seconds.
+// ===================================
+
+function getDeviceId() {
+  let id = localStorage.getItem("deviceId");
+  if (!id) {
+    id = "DID-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10).toUpperCase();
+    localStorage.setItem("deviceId", id);
+  }
+  return id;
+}
+
+function startSessionWatcher() {
+  const empCode = localStorage.getItem("employeeCode");
+  const empName = localStorage.getItem("employeeName");
+  const role    = localStorage.getItem("userRole");
+
+  // Only watch regular user sessions — admins are not subject to sheet approval
+  if (role !== "user" || !empCode || !empName) return;
+
+  if (sessionWatcherId !== null) return;   // already running
+
+  sessionWatcherId = setInterval(async () => {
+    try {
+      const res    = await fetch(USER_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          empCode,
+          empName,
+          deviceId:  getDeviceId(),
+          userAgent: navigator.userAgent
+        })
+      });
+      const result = await res.json();
+
+      if (result.status === "DENIED") {
+        triggerForceLogout("Your access has been revoked by the administrator.");
+      } else if (result.status === "REMOVED") {
+        triggerForceLogout("Your employee record has been removed from the system.");
+      }
+      // APPROVED → all good, keep working silently
+
+    } catch (_) {
+      // Network hiccup — skip this tick, try again in 5 s
+    }
+  }, SESSION_CHECK_INTERVAL_MS);
+}
+
+function stopSessionWatcher() {
+  if (sessionWatcherId !== null) {
+    clearInterval(sessionWatcherId);
+    sessionWatcherId = null;
+  }
+}
+
+/**
+ * Wipes the session, stops all background tasks, shows a
+ * full-screen overlay, then redirects to the login page.
+ */
+function triggerForceLogout(reason) {
+  // Stop everything immediately so no more pings fire
+  stopSessionWatcher();
+  stopRealTimeSync();
+  allowNavigation = true;
+
+  // Clear session storage
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("employeeName");
+  localStorage.removeItem("employeeCode");
+  sessionStorage.removeItem("isAdmin");
+
+  // Show overlay with countdown
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0,0,0,0.78);
+    display: flex; align-items: center; justify-content: center;
+  `;
+  overlay.innerHTML = `
+    <div style="
+      background: #fff; border-radius: 16px; padding: 40px 32px;
+      text-align: center; max-width: 340px; width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      font-family: 'Poppins', sans-serif;
+    ">
+      <div style="font-size: 44px; margin-bottom: 14px;">🔒</div>
+      <h2 style="margin: 0 0 10px; font-size: 18px; color: #991B1B; font-weight: 600;">
+        Session Ended
+      </h2>
+      <p style="margin: 0 0 8px; font-size: 14px; color: #4B5563; line-height: 1.6;">
+        ${reason}
+      </p>
+      <p style="margin: 0; font-size: 12px; color: #9CA3AF;">
+        Redirecting to login...
+      </p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Redirect after 3 seconds
+  setTimeout(() => {
+    window.location.replace("Form.html");
+  }, 3000);
+}
 
 // ===================================
 // 🔄 REAL-TIME SYNC ENGINE
@@ -330,7 +420,6 @@ function initBackControl() {
   window.history.pushState(null, null, window.location.href);
 
   window.addEventListener("popstate", function () {
-    // Always re-push so every back press fires another popstate
     window.history.pushState(null, null, window.location.href);
     handleHardwareBack();
   });
@@ -716,17 +805,8 @@ function renderStockTable(data, tbodyId) {
 }
 
 // ===================================
-// ██ POPUP NAVIGATION SYSTEM █████████
+// POPUP NAVIGATION SYSTEM
 // ===================================
-//
-//  showPopup(html)  — opens a fresh popup; resets the stack (Level 0)
-//  pushPopup(html)  — saves current content to stack, shows new content (Level N+1)
-//  popupBack()      — restores previous content from stack (Level N-1)
-//  closePopup()     — hides overlay, clears stack
-//
-// Hardware back key calls popupBack() when stack has entries,
-// and closePopup() when the stack is empty (Level 0).
-// ────────────────────────────────────
 
 function getOrCreateOverlay() {
   let overlay = document.getElementById("inventoryPopup");
@@ -735,36 +815,30 @@ function getOrCreateOverlay() {
     overlay.id        = "inventoryPopup";
     overlay.className = "inventory-popup-overlay";
     document.body.appendChild(overlay);
-    // Tap outside the box to close entirely
     overlay.addEventListener("click", (e) => { if (e.target === overlay) closePopup(); });
-    // Escape key (desktop / physical keyboard)
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePopup(); });
   }
   return overlay;
 }
 
-/** Open a brand-new popup at Level 0. Always resets the stack. */
 function showPopup(innerHtml) {
-  popupStack = [];   // fresh flow — clear any previous stack
+  popupStack = [];
   const overlay = getOrCreateOverlay();
   overlay.innerHTML = `<div class="inventory-popup-box">${innerHtml}</div>`;
   overlay.classList.add("active");
 }
 
-/** Push current popup content onto the stack and show new content (Level N+1). */
 function pushPopup(innerHtml) {
   const overlay = getOrCreateOverlay();
   const box     = overlay.querySelector(".inventory-popup-box");
   if (box) {
-    popupStack.push(box.innerHTML);   // save current level
+    popupStack.push(box.innerHTML);
     box.innerHTML = innerHtml;
   } else {
-    // Overlay not yet open — treat as a fresh open
     showPopup(innerHtml);
   }
 }
 
-/** Restore the previous popup level from the stack. */
 function popupBack() {
   if (popupStack.length === 0) { closePopup(); return; }
   const prev    = popupStack.pop();
@@ -773,14 +847,12 @@ function popupBack() {
   if (box) box.innerHTML = prev;
 }
 
-/** Close popup and clear stack. */
 function closePopup() {
   popupStack = [];
   const overlay = document.getElementById("inventoryPopup");
   if (overlay) overlay.classList.remove("active");
 }
 
-// Back button row inside popup (icon only, no label)
 function popupNavBar(label) {
   return `
     <div class="popup-header-with-back">
@@ -795,7 +867,7 @@ function popupNavBar(label) {
 }
 
 // ===================================
-// ── OUT OF STOCK POPUP  (Level 0) ──
+// OUT OF STOCK POPUP
 // ===================================
 
 function openOutOfStockPopup(storeIdx) {
@@ -823,7 +895,6 @@ function openOutOfStockPopup(storeIdx) {
     const idx      = storeForPopup({ row });
     const model    = row["Product Model"] || "";
     const category = row["Category"]      || "";
-
     return `
       <div class="step-product-card" onclick="navToOutOfStockDetail(${idx})">
         <div class="step-product-info">
@@ -854,7 +925,6 @@ function openOutOfStockPopup(storeIdx) {
     </div>`);
 }
 
-// Level 1 — product detail from Out-of-Stock list
 function navToOutOfStockDetail(storeIdx) {
   const stored = popupStore[storeIdx];
   if (!stored) return;
@@ -877,7 +947,7 @@ function navToOutOfStockDetail(storeIdx) {
 }
 
 // ===================================
-// STEP 1a: CATEGORY LIST POPUP  (Level 0)
+// CATEGORY LIST POPUP
 // ===================================
 
 function openCategoryListPopup(storeIdx) {
@@ -922,15 +992,15 @@ function openCategoryListPopup(storeIdx) {
 }
 
 // ===================================
-// STEP 1b: ALL PRODUCTS POPUP  (Level 0)
+// ALL PRODUCTS POPUP
 // ===================================
 
 function openAllProductsPopup(storeIdx) {
   const stored = popupStore[storeIdx];
   if (!stored) return;
   const { viewType, data } = stored;
-  const { title }    = getCategoryPopupConfig(viewType);
-  const categories   = [...new Set(data.map(r => r["Category"]).filter(Boolean))];
+  const { title }  = getCategoryPopupConfig(viewType);
+  const categories = [...new Set(data.map(r => r["Category"]).filter(Boolean))];
 
   const categoryCards = categories.map((cat) => {
     const count  = data.filter(r => r["Category"] === cat).length;
@@ -965,7 +1035,7 @@ function openAllProductsPopup(storeIdx) {
 }
 
 // ===================================
-// STEP 2: PRODUCT LIST  (Level 1 — pushed)
+// CATEGORY PRODUCTS (Level 1 — pushed)
 // ===================================
 
 function navToCategoryProducts(storeIdx) {
@@ -987,7 +1057,6 @@ function navToCategoryProducts(storeIdx) {
       else if (stockNum <= 5)  stockClass = "stock-low";
       else                     stockClass = "stock-ok";
     }
-
     return `
       <div class="step-product-card" onclick="navToProductDetail(${idx})">
         <div class="step-product-info">
@@ -1019,7 +1088,7 @@ function navToCategoryProducts(storeIdx) {
 }
 
 // ===================================
-// STEP 3: PRODUCT DETAIL  (Level 2 — pushed)
+// PRODUCT DETAIL (Level 2 — pushed)
 // ===================================
 
 function navToProductDetail(storeIdx) {
@@ -1044,7 +1113,7 @@ function navToProductDetail(storeIdx) {
 }
 
 // ===================================
-// CATEGORY POPUP (table row — category cell)
+// CATEGORY POPUP (table row click)
 // ===================================
 
 function openCategoryPopup(storeIdx) {
@@ -1052,7 +1121,7 @@ function openCategoryPopup(storeIdx) {
   if (!stored) return;
   const { viewType, selectedCategory } = stored;
   const { data, title } = getCategoryPopupConfig(viewType);
-  const products  = data.filter(r => r["Category"] === selectedCategory);
+  const products = data.filter(r => r["Category"] === selectedCategory);
 
   const productCards = products.map((row) => {
     const idx      = storeForPopup({ row, viewType, cat: selectedCategory, origin: "table" });
@@ -1066,7 +1135,6 @@ function openCategoryPopup(storeIdx) {
       else if (stockNum <= 5)  stockClass = "stock-low";
       else                     stockClass = "stock-ok";
     }
-
     return `
       <div class="step-product-card" onclick="navToProductDetail(${idx})">
         <div class="step-product-info">
@@ -1097,7 +1165,7 @@ function openCategoryPopup(storeIdx) {
 }
 
 // ===================================
-// PRODUCT DETAIL POPUP (table row — product cell)
+// PRODUCT POPUP (table row click)
 // ===================================
 
 function openProductPopup(storeIdx) {
@@ -1174,8 +1242,11 @@ function initLogout() {
   confirmLogoutBtn?.addEventListener("click", () => {
     allowNavigation = true;
     stopRealTimeSync();
+    stopSessionWatcher();       // ← stop watcher on manual logout too
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("employeeName");
+    localStorage.removeItem("employeeCode");
     window.location.replace("Form.html");
   });
   logoutModal?.addEventListener("click", (e) => {
