@@ -7,407 +7,446 @@
   <title>Inventory Login</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
 
     body {
-      width: 100%;
-      min-height: 100vh;
-      padding: 0 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f6f8fc;
+      width:100%; min-height:100vh; padding:0 10px;
+      display:flex; justify-content:center; align-items:center; background:#f6f8fc;
     }
 
     .login_form {
-      width: 100%;
-      max-width: 435px;
-      background: #fff;
-      border-radius: 10px;
-      padding: 41px 30px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      width:100%; max-width:435px; background:#fff;
+      border-radius:10px; padding:41px 30px;
+      box-shadow:0 10px 20px rgba(0,0,0,0.15);
     }
 
-    .logo {
-      text-align: center;
-      margin: 0;
-      padding: 0;
-      line-height: 0;
+    .logo { text-align:center; margin-bottom:4px; }
+    .logo img { max-width:160px; height:auto; display:inline-block; }
+
+    .login_option { display:flex; width:100%; justify-content:space-between; align-items:center; }
+    .login_option .option { width:calc(100% / 2 - 12px); }
+    .login_option .option a {
+      height:56px; display:flex; justify-content:center; align-items:center;
+      gap:12px; background:#F8F8FB; border:1px solid #DADAF2; border-radius:10px;
+      margin:34px 0 24px; text-decoration:none; color:#171645;
+      font-weight:500; transition:0.2s ease;
+    }
+    .login_option .option a:hover,
+    .login_option .option a.active { background:#ededf5; border-color:#f7b217; }
+
+    .login_form p { text-align:center; font-weight:500; }
+
+    .separator { position:relative; margin-bottom:24px; }
+    .separator span { background:#fff; z-index:1; padding:0 10px; position:relative; }
+    .separator::after {
+      content:''; position:absolute; width:100%; top:50%; left:0;
+      height:1px; background:#C2C2C2; display:block;
     }
 
-    .logo img {
-      max-width: 160px;
-      height: auto;
-      display: inline-block;
+    .input_box label { display:block; font-weight:500; margin-bottom:8px; }
+    .input_box input {
+      width:100%; height:57px; border:1px solid #DADAF2; border-radius:10px;
+      outline:none; background:#F8F8FB; font-size:17px;
+      padding:0 20px; margin-bottom:25px; transition:0.2s ease;
     }
-
-    .login_form .login_option {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .login_form .login_option .option {
-      width: calc(100% / 2 - 12px);
-    }
-
-    .login_form .login_option .option a {
-      height: 56px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      background: #F8F8FB;
-      border: 1px solid #DADAF2;
-      border-radius: 10px;
-      margin: 34px 0 24px 0;
-      text-decoration: none;
-      color: #171645;
-      font-weight: 500;
-      transition: 0.2s ease;
-    }
-
-    .login_form .login_option .option a:hover {
-      background: #ededf5;
-      border-color: #f7b217;
-    }
-
-    .login_form p {
-      text-align: center;
-      font-weight: 500;
-    }
-
-    .login_form .separator {
-      position: relative;
-      margin-bottom: 24px;
-    }
-
-    .login_form .separator span {
-      background: #fff;
-      z-index: 1;
-      padding: 0 10px;
-      position: relative;
-    }
-
-    .login_form .separator::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      top: 50%;
-      left: 0;
-      height: 1px;
-      background: #C2C2C2;
-      display: block;
-    }
-
-    form .input_box label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    form .input_box input {
-      width: 100%;
-      height: 57px;
-      border: 1px solid #DADAF2;
-      border-radius: 10px;
-      outline: none;
-      background: #F8F8FB;
-      font-size: 17px;
-      padding: 0 50px 0 20px;
-      margin-bottom: 25px;
-      transition: 0.2s ease;
-    }
-
-    form .input_box input:focus {
-      border-color: #f7b217;
-    }
-
-    form .input_box .password_title {
-      display: flex;
-      justify-content: space-between;
-      text-align: center;
-    }
-
-    form .input_box {
-      position: relative;
-    }
+    .input_box input:focus { border-color:#f7b217; }
+    .password_title { display:flex; justify-content:space-between; }
+    .input_box { position:relative; }
 
     .toggle_password {
-      position: absolute;
-      right: 16px;
-      bottom: 41px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #888;
-      font-size: 18px;
-      width: auto;
-      height: auto;
-      margin: 0;
-      padding: 0;
-      transition: color 0.2s ease;
+      position:absolute; right:16px; bottom:41px;
+      background:none; border:none; cursor:pointer;
+      color:#888; font-size:18px; width:auto; height:auto;
+      margin:0; padding:0; transition:color 0.2s ease;
     }
+    .toggle_password:hover { color:#f7b217; background:none; }
 
-    .toggle_password:hover {
-      color: #f7b217;
-      background: none;
-    }
-
-    a {
-      text-decoration: none;
-      color: #f7b217;
-      font-weight: 500;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .option a i {
-      font-size: 20px;
-      margin-right: 8px;
-    }
+    a { text-decoration:none; color:#f7b217; font-weight:500; }
+    a:hover { text-decoration:underline; }
+    .option a i { font-size:20px; margin-right:8px; }
 
     form button {
-      width: 100%;
-      height: 56px;
-      border-radius: 10px;
-      border: none;
-      outline: none;
-      background: #ffcc3f;
-      color: #fff;
-      font-size: 18px;
-      font-weight: 500;
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-bottom: 28px;
-      transition: 0.3s ease;
+      width:100%; height:56px; border-radius:10px; border:none; outline:none;
+      background:#ffcc3f; color:#fff; font-size:18px; font-weight:500;
+      text-transform:uppercase; cursor:pointer; margin-bottom:28px; transition:0.3s ease;
     }
+    form button:hover { background:#f7b217; }
+    form button:disabled { background:#f7b217; cursor:not-allowed; }
 
-    form button:hover {
-      background: #f7b217;
-    }
+    .hidden { display:none; }
 
-    .login_form .login_option .option a.active {
-      background: #ededf5;
-      border-color: #f7b217;
+    #statusBox {
+      display:none; padding:16px 18px; border-radius:10px;
+      margin-bottom:20px; font-size:14px; line-height:1.6;
+      text-align:center; font-weight:500;
     }
-
-    .hidden {
-      display: none;
-    }
+    #statusBox.pending { background:#FEF9C3; color:#854D0E; border:1px solid #FDE047; }
+    #statusBox.denied  { background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; }
+    #statusBox.error   { background:#FEE2E2; color:#991B1B; border:1px solid #FCA5A5; }
+    #statusBox.info    { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
   </style>
 </head>
 <body>
-  <div class="login_form">
-    <form action="#">
-      <div class="logo">
-        <img src="black.png" alt="Company Logo" />
+<div class="login_form">
+  <form action="#">
+    <div class="logo">
+      <img src="black.png" alt="Company Logo" />
+    </div>
+
+    <div class="login_option">
+      <div class="option">
+        <a href="#" id="userBtn" class="active">
+          <i class="fa-solid fa-user"></i><span>User</span>
+        </a>
       </div>
-
-      <div class="login_option">
-        <div class="option">
-          <a href="#" id="userBtn" class="active">
-            <i class="fa-solid fa-user"></i>
-            <span>User</span>
-          </a>
-        </div>
-
-        <div class="option">
-          <a href="#" id="adminBtn">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>Admin</span>
-          </a>
-        </div>
+      <div class="option">
+        <a href="#" id="adminBtn">
+          <i class="fa-solid fa-user-shield"></i><span>Admin</span>
+        </a>
       </div>
+    </div>
 
-      <p class="separator">
-        <span id="loginType">User Login</span>
-      </p>
+    <p class="separator"><span id="loginType">User Login</span></p>
+    <div id="statusBox"></div>
 
-      <div class="input_box">
-        <label for="username" id="nameLabel">User Name</label>
-        <input type="text" id="username" placeholder="Enter User Name" required />
+    <div class="input_box">
+      <label for="empName" id="nameLabel">Employee Name</label>
+      <input type="text" id="empName" placeholder="Enter Employee Name" />
+    </div>
+
+    <div class="input_box" id="empCodeBox">
+      <label for="empCode">Employee Code</label>
+      <input type="text" id="empCode" placeholder="Enter Employee Code (e.g. EC 001)" />
+    </div>
+
+    <div class="input_box hidden" id="passwordBox">
+      <div class="password_title">
+        <label for="password">Password</label>
+        <a href="#"></a>
       </div>
+      <input type="password" id="password" placeholder="Enter your password" />
+      <button type="button" class="toggle_password" id="togglePassword" tabindex="-1">
+        <i class="fa-solid fa-eye" id="eyeIcon"></i>
+      </button>
+    </div>
 
-      <div class="input_box hidden" id="passwordBox">
-        <div class="password_title">
-          <label for="password">Password</label>
-          <a href="#"></a>
-        </div>
-        <input type="password" id="password" placeholder="Enter your password" />
-        <button type="button" class="toggle_password" id="togglePassword" tabindex="-1">
-          <i class="fa-solid fa-eye" id="eyeIcon"></i>
-        </button>
-      </div>
-
-      <button type="submit" id="submitBtn">Continue</button>
-
-      <p class="sign_up">Get started by Login your account</p>
-    </form>
-  </div>
+    <button type="submit" id="submitBtn">LOGIN</button>
+    <p class="sign_up">Get started by logging into your account</p>
+  </form>
+</div>
 
 <script>
+/* ================================================
+   TWO SEPARATE SCRIPT URLs
+   USER  → handles employee login, approval, device check
+   ADMIN → handles admin credential verification
+================================================ */
+const USER_SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbyt9-ULLPxkUAoXra8E9MU657kdhGGYLGUrfA_aEXNOnvhVp4xhowi8oSSzaTHe2uzl/exec";
+const ADMIN_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHKe7HT-iKoM3sXoqa8ZWjNuBC1c1Ms6HZfhx6ERNsPpCR7X7Ap7DTEMLkgb3LT54jDg/exec";
 
-/* ============================= */
-/* SESSION PERSISTENCE CHECK     */
-/* ============================= */
-/* On app launch, if already logged in → skip login page */
-(function() {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const isAdmin    = localStorage.getItem("isAdmin")    === "true"; // ✅ localStorage for persistence
-  if (isLoggedIn) {
-    if (isAdmin) {
-      window.location.replace("Admin Dashboard.html");
-    } else {
+/* ================================================
+   FORCE LOGOUT HELPER
+================================================ */
+function forceLogout() {
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("employeeName");
+  localStorage.removeItem("employeeCode");
+  sessionStorage.removeItem("isAdmin");
+}
+
+/* ================================================
+   DEVICE FINGERPRINT
+   Must be defined before checkExistingSession
+   because the session check uses it immediately.
+================================================ */
+function getDeviceId() {
+  let id = localStorage.getItem("deviceId");
+  if (!id) {
+    id = "DID-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10).toUpperCase();
+    localStorage.setItem("deviceId", id);
+  }
+  return id;
+}
+
+/* ================================================
+   SESSION CHECK ON PAGE LOAD
+   - Admin  → redirect straight to dashboard
+   - User   → ping USER_SCRIPT_URL to confirm
+               status is still APPROVED before
+               redirecting; if DENIED/REMOVED,
+               wipe session and show error here.
+================================================ */
+(async function checkExistingSession() {
+  if (localStorage.getItem("isLoggedIn") !== "true") return;
+
+  const role    = localStorage.getItem("userRole");
+  const empCode = localStorage.getItem("employeeCode");
+  const empName = localStorage.getItem("employeeName");
+
+  if (role === "admin") {
+    window.location.replace("Admin Dashboard.html");
+    return;
+  }
+
+  if (empCode && empName) {
+    try {
+      const res    = await fetch(USER_SCRIPT_URL, {       // ← USER url
+        method: "POST",
+        body: JSON.stringify({
+          empCode,
+          empName,
+          deviceId:  getDeviceId(),
+          userAgent: navigator.userAgent
+        })
+      });
+      const result = await res.json();
+
+      if (result.status === "APPROVED") {
+        window.location.replace("A&Tuser.html");
+      } else {
+        forceLogout();
+        showStatus("denied", "&#10007; Your access has been revoked. Please contact the administrator.");
+      }
+    } catch (_) {
+      // Network error — give benefit of the doubt
       window.location.replace("A&Tuser.html");
     }
+  } else {
+    forceLogout();
   }
 })();
 
-/* ============================= */
-/* ELEMENTS */
-/* ============================= */
-
+/* ── ELEMENTS ── */
 const userBtn        = document.getElementById("userBtn");
 const adminBtn       = document.getElementById("adminBtn");
 const passwordBox    = document.getElementById("passwordBox");
+const empCodeBox     = document.getElementById("empCodeBox");
 const nameLabel      = document.getElementById("nameLabel");
-const usernameInput  = document.getElementById("username");
+const empNameInput   = document.getElementById("empName");
+const empCodeInput   = document.getElementById("empCode");
 const passwordInput  = document.getElementById("password");
 const loginType      = document.getElementById("loginType");
 const submitBtn      = document.getElementById("submitBtn");
 const togglePassword = document.getElementById("togglePassword");
 const eyeIcon        = document.getElementById("eyeIcon");
+const statusBox      = document.getElementById("statusBox");
 
-let mode = "user";
+let mode      = "user";
+let pollTimer = null;
 
-/* ============================= */
-/* MODE SWITCH */
-/* ============================= */
-
+/* ── MODE SWITCH ── */
 function setUserMode() {
   mode = "user";
   userBtn.classList.add("active");
   adminBtn.classList.remove("active");
+  empCodeBox.classList.remove("hidden");
   passwordBox.classList.add("hidden");
-  nameLabel.textContent         = "User Name";
-  usernameInput.placeholder     = "Enter User Name";
-  loginType.textContent         = "User Login";
-  submitBtn.textContent         = "Continue";
-  passwordInput.required        = false;
-  passwordInput.value           = "";
-  passwordInput.type            = "password";
-  eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+  nameLabel.textContent    = "Employee Name";
+  empNameInput.placeholder = "Enter Employee Name";
+  loginType.textContent    = "User Login";
+  submitBtn.textContent    = "Continue";
+  passwordInput.required   = false;
+  passwordInput.value      = "";
+  empCodeInput.value       = "";
+  passwordInput.type       = "password";
+  eyeIcon.className        = "fa-solid fa-eye";
+  hideStatus();
 }
 
 function setAdminMode() {
   mode = "admin";
   adminBtn.classList.add("active");
   userBtn.classList.remove("active");
+  empCodeBox.classList.add("hidden");
   passwordBox.classList.remove("hidden");
-  nameLabel.textContent     = "Admin Name";
-  usernameInput.placeholder = "Enter Admin Name";
-  loginType.textContent     = "Admin Login";
-  submitBtn.textContent     = "Login";
-  passwordInput.required    = true;
+  nameLabel.textContent    = "Admin Name";
+  empNameInput.placeholder = "Enter Admin Name";
+  loginType.textContent    = "Admin Login";
+  submitBtn.textContent    = "Login";
+  passwordInput.required   = true;
+  empCodeInput.value       = "";
+  hideStatus();
 }
 
-/* ============================= */
-/* BUTTON EVENTS */
-/* ============================= */
-
-userBtn.addEventListener("click", (e) => { e.preventDefault(); setUserMode(); });
+userBtn.addEventListener("click",  (e) => { e.preventDefault(); setUserMode();  });
 adminBtn.addEventListener("click", (e) => { e.preventDefault(); setAdminMode(); });
 
-/* ============================= */
-/* EYE TOGGLE */
-/* ============================= */
+/* ── STATUS BOX ── */
+function showStatus(type, msg) {
+  statusBox.className     = type;
+  statusBox.innerHTML     = msg;
+  statusBox.style.display = "block";
+}
+function hideStatus() {
+  statusBox.style.display = "none";
+  statusBox.className     = "";
+}
 
+/* ── PASSWORD TOGGLE ── */
 togglePassword.addEventListener("click", () => {
-  const isHidden = passwordInput.type === "password";
-  passwordInput.type = isHidden ? "text" : "password";
-  eyeIcon.classList.toggle("fa-eye",       !isHidden);
-  eyeIcon.classList.toggle("fa-eye-slash",  isHidden);
+  const hidden = passwordInput.type === "password";
+  passwordInput.type = hidden ? "text" : "password";
+  eyeIcon.className  = hidden ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
 });
 
-/* ============================= */
-/* ENTER KEY */
-/* ============================= */
+/* ── ENTER KEY ── */
+document.addEventListener("keydown", (e) => { if (e.key === "Enter") submitBtn.click(); });
 
-document.addEventListener("keydown", function(e) {
-  if (e.key === "Enter") submitBtn.click();
-});
+/* ── POLLING (User only — uses USER_SCRIPT_URL) ── */
+function startPolling(empCode, empName) {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    try {
+      const res    = await fetch(USER_SCRIPT_URL, {       // ← USER url
+        method: "POST",
+        body: JSON.stringify({
+          empCode,
+          empName,
+          deviceId:  getDeviceId(),
+          userAgent: navigator.userAgent
+        })
+      });
+      const result = await res.json();
+      handleLoginResult(result.status, empCode, empName);
+    } catch (_) {}
+  }, 8000);
+}
 
-/* ============================= */
-/* APPS SCRIPT URL */
-/* ============================= */
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHKe7HT-iKoM3sXoqa8ZWjNuBC1c1Ms6HZfhx6ERNsPpCR7X7Ap7DTEMLkgb3LT54jDg/exec";
+/* ── HANDLE LOGIN RESULT ── */
+function handleLoginResult(status, empCode, empName) {
+  switch (status) {
+    case "APPROVED":
+      stopPolling();
+      localStorage.setItem("isLoggedIn",   "true");
+      localStorage.setItem("userRole",     "user");
+      localStorage.setItem("employeeName", empName);
+      localStorage.setItem("employeeCode", empCode);
+      sessionStorage.removeItem("isAdmin");
+      window.location.replace("A&Tuser.html");
+      break;
 
-/* ============================= */
-/* LOGIN */
-/* ============================= */
+    case "PENDING":
+      showStatus("pending", "&#9203; Your login request has been sent to the admin.<br>Please wait for approval...");
+      submitBtn.disabled    = true;
+      submitBtn.textContent = "Waiting...";
+      startPolling(empCode, empName);
+      break;
 
+    case "PENDING_REVIEW":
+      showStatus("pending", "&#9888; Your credentials could not be fully verified.<br>The admin has been notified and will review your request.");
+      submitBtn.disabled    = true;
+      submitBtn.textContent = "Waiting...";
+      startPolling(empCode, empName);
+      break;
+
+    case "NEW_DEVICE":
+      showStatus("info", "&#128241; A new device was detected for your account.<br>The admin has been notified. Please wait for re-approval.");
+      submitBtn.disabled    = true;
+      submitBtn.textContent = "Waiting...";
+      startPolling(empCode, empName);
+      break;
+
+    case "DENIED":
+      stopPolling();
+      showStatus("denied", "&#10007; Access Denied<br>Please contact the Administrator.");
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Continue";
+      break;
+
+    case "REMOVED":
+      stopPolling();
+      showStatus("denied", "&#10007; Your employee record has been removed.<br>Please contact the administrator.");
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Continue";
+      break;
+
+    case "MISSING_FIELDS":
+      stopPolling();
+      showStatus("error", "&#10007; Please enter both Employee Name and Employee Code.");
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Continue";
+      break;
+
+    default:
+      stopPolling();
+      showStatus("error", "&#10007; Unexpected error: " + status + ". Please try again.");
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Continue";
+  }
+}
+
+/* ── SUBMIT ── */
 submitBtn.addEventListener("click", async function(e) {
   e.preventDefault();
 
-  const username = usernameInput.value.trim();
+  const empName  = empNameInput.value.trim();
+  const empCode  = empCodeInput.value.trim().toUpperCase();
   const password = passwordInput.value.trim();
 
-  /* USER LOGIN */
+  /* ── USER LOGIN → USER_SCRIPT_URL ── */
   if (mode === "user") {
-    if (username === "") { alert("Please enter your name"); return; }
+    if (!empName) { showStatus("error", "&#10007; Please enter your Employee Name."); return; }
+    if (!empCode) { showStatus("error", "&#10007; Please enter your Employee Code."); return; }
 
-    // ✅ Store session in localStorage (persists across app restarts)
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("isAdmin",    "false");
-    localStorage.setItem("userName",   username);
-    window.location.replace("A&Tuser.html");
-  }
-
-  /* ADMIN LOGIN */
-  else if (mode === "admin") {
-    if (username === "" || password === "") { alert("Enter Admin credentials"); return; }
+    submitBtn.disabled    = true;
+    submitBtn.textContent = "Checking...";
+    hideStatus();
 
     try {
-      submitBtn.disabled    = true;
-      submitBtn.textContent = "Checking...";
+      const res    = await fetch(USER_SCRIPT_URL, {       // ← USER url
+        method: "POST",
+        body: JSON.stringify({
+          empCode,
+          empName,
+          deviceId:  getDeviceId(),
+          userAgent: navigator.userAgent
+        })
+      });
+      const result = await res.json();
+      handleLoginResult(result.status, empCode, empName);
+    } catch (err) {
+      showStatus("error", "&#10007; Server error. Please try again.");
+      submitBtn.disabled    = false;
+      submitBtn.textContent = "Continue";
+    }
 
-      const response = await fetch(SCRIPT_URL, {
+  /* ── ADMIN LOGIN → ADMIN_SCRIPT_URL ── */
+  } else {
+    const username = empNameInput.value.trim();
+    if (!username || !password) { alert("Enter Admin credentials"); return; }
+
+    submitBtn.disabled    = true;
+    submitBtn.textContent = "Checking...";
+
+    try {
+      const res    = await fetch(ADMIN_SCRIPT_URL, {      // ← ADMIN url
         method: "POST",
         body: JSON.stringify({ username, password })
       });
-      const result = await response.json();
+      const result = await res.json();
 
       if (result.status === "success") {
-        // ✅ Store session in localStorage (persists across app restarts)
         localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("isAdmin",    "true");
-        localStorage.setItem("adminName",  username);
+        localStorage.setItem("userRole",   "admin");
+        sessionStorage.setItem("isAdmin",  "true");
         window.location.replace("Admin Dashboard.html");
       } else {
         alert("Invalid Admin Credentials");
       }
-    } catch (error) {
+    } catch (err) {
       alert("Server error. Try again.");
-      console.error(error);
     } finally {
       submitBtn.disabled    = false;
       submitBtn.textContent = "Login";
     }
   }
 });
-
 </script>
 </body>
 </html>
