@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="A&T logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+
+      <!-- SIDEBAR -->
+      <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="dashboard-brand">
+          <button class="dashboard-sidebar-toggle">
+            <span class="material-symbols-rounded">menu</span>
+          </button>
+          <a class="logo">Dashboard</a>
+        </div>
+
+        <nav class="dashboard-nav">
+          <div class="dashboard-nav-section">
+            <a href="#" class="dashboard-nav-item active" data-view="at-products">
+              <span class="nav-icon material-symbols-rounded">dashboard</span>
+              <span class="nav-label">A&amp;T Products</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="aver-products">
+              <span class="nav-icon material-symbols-rounded">inventory_2</span>
+              <span class="nav-label">Aver Products</span>
+            </a>
+            <div class="demo-group">
+              <div class="demo-heading">
+                <span class="nav-label">Demo Products</span>
+              </div>
+              <a href="#" class="dashboard-nav-item demo-sub" data-view="at-demo">
+                <span class="nav-icon material-symbols-rounded">local_library</span>
+                <span class="nav-label">A&amp;T Demo Stock</span>
+              </a>
+              <a href="#" class="dashboard-nav-item demo-sub" data-view="aver-demo">
+                <span class="nav-icon material-symbols-rounded">star</span>
+                <span class="nav-label">Aver Demo Stock</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="#" class="btn sidebar-back-button" id="logoutBtnSidebar">
+            <span class="material-symbols-rounded">logout</span>
+            <span class="btn-label">Back to Login</span>
+          </a>
+        </div>
+      </aside>
+
+      <div class="dashboard-sidebar-overlay" id="dashboardSidebarOverlay"></div>
+
+      <!-- MAIN CONTENT -->
+      <main class="dashboard-main">
+        <header class="dashboard-header">
+          <div class="dashboard-header-content">
+            <button class="dashboard-sidebar-toggle">
+              <span class="material-symbols-rounded">menu</span>
+            </button>
+            <h1 class="dashboard-header-title" id="dashboardTitle">A&amp;T Products</h1>
+          </div>
+
+          <!-- Desktop Search -->
+          <div class="search-container" id="searchContainer">
+            <span class="search-icon material-symbols-rounded">search</span>
+            <input type="search" class="search-input" placeholder="Search products..." id="searchInput" autocomplete="off" />
+            <button class="search-clear" id="searchClear" title="Clear search">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+
+          <div class="dashboard-header-actions">
+            <button class="mobile-search-btn btn btn-ghost" id="mobileSearchBtn">
+              <span class="material-symbols-rounded">search</span>
+            </button>
+            <div class="user-menu" id="userMenu">
+              <div class="user-menu-trigger" id="user-menu-trigger">
+                <div class="user-avatar-small">
+                  <img src="A&T logo.png" alt="User Avatar" onerror="this.style.display='none'" />
+                </div>
+              </div>
+              <div class="user-menu-dropdown">
+                <a href="#" class="user-menu-item">
+                  <span class="icon material-symbols-rounded">person</span>
+                  <span>Admin</span>
+                </a>
+                <div class="user-menu-item theme-item">
+                  <span class="icon material-symbols-rounded">palette</span>
+                  <div class="theme-toggle" id="theme-toggle">
+                    <div class="theme-option active" data-theme="light">Light</div>
+                    <div class="theme-option" data-theme="dark">Dark</div>
+                  </div>
+                </div>
+                <a href="#" class="user-menu-item logout-menu-item" id="logoutBtnHeader">
+                  <span class="icon material-symbols-rounded">logout</span>
+                  <span>Log Out</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Mobile Search Bar -->
+        <div class="mobile-search-bar" id="mobileSearchBar">
+          <span class="material-symbols-rounded">search</span>
+          <input type="search" class="mobile-search-input" placeholder="Search products..." id="mobileSearchInput" autocomplete="off" />
+          <button id="mobileSearchClose">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <!-- Search Results Banner -->
+        <div class="search-results-banner" id="searchResultsBanner" style="display:none;">
+          <span class="material-symbols-rounded">filter_list</span>
+          <span id="searchResultsText">Showing results for ""</span>
+          <button class="clear-search-btn" id="clearSearchBtn">
+            <span class="material-symbols-rounded">close</span> Clear
+          </button>
+        </div>
+
+        <div class="dashboard-content">
+
+          <!-- VIEW 1 : A&T PRODUCTS -->
+          <div class="dashboard-view active" id="at-products">
+            <div class="view-header">
+              <p class="view-section-title">Summary</p>
+            </div>
+            <div class="summary-cards-grid" id="at-products-summary"></div>
+
+            <p class="view-section-title section-gap">All Products</p>
+            <div class="table-wrapper">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Product Model</th>
+                    <th>Salable Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="at-products-table-body"></tbody>
+              </table>
+              <div class="no-results-row" id="at-products-no-results" style="display:none;">
+                <span class="material-symbols-rounded">search_off</span>
+                <p>No products match your search</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 2 : AVER PRODUCTS -->
+          <div class="dashboard-view" id="aver-products">
+            <div class="view-header">
+              <p class="view-section-title">Summary</p>
+            </div>
+            <div class="summary-cards-grid" id="aver-products-summary"></div>
+
+            <p class="view-section-title section-gap">All Products</p>
+            <div class="table-wrapper">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Product Model</th>
+                    <th>Salable Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="aver-products-table-body"></tbody>
+              </table>
+              <div class="no-results-row" id="aver-products-no-results" style="display:none;">
+                <span class="material-symbols-rounded">search_off</span>
+                <p>No products match your search</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 3 : A&T DEMO STOCK -->
+          <div class="dashboard-view" id="at-demo">
+            <div class="view-header">
+              <p class="view-section-title">Summary</p>
+            </div>
+            <div class="summary-cards-grid" id="at-demo-summary"></div>
+
+            <p class="view-section-title section-gap">All Demo Products</p>
+            <div class="table-wrapper">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Product Model</th>
+                    <th>Demo</th>
+                    <th>Support</th>
+                    <th>Total Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="at-demo-table-body"></tbody>
+              </table>
+              <div class="no-results-row" id="at-demo-no-results" style="display:none;">
+                <span class="material-symbols-rounded">search_off</span>
+                <p>No products match your search</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 4 : AVER DEMO STOCK -->
+          <div class="dashboard-view" id="aver-demo">
+            <div class="view-header">
+              <p class="view-section-title">Summary</p>
+            </div>
+            <div class="summary-cards-grid" id="aver-demo-summary"></div>
+
+            <p class="view-section-title section-gap">All Demo Products</p>
+            <div class="table-wrapper">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Product Model</th>
+                    <th>Demo</th>
+                    <th>Support</th>
+                    <th>Total Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="aver-demo-table-body"></tbody>
+              </table>
+              <div class="no-results-row" id="aver-demo-no-results" style="display:none;">
+                <span class="material-symbols-rounded">search_off</span>
+                <p>No products match your search</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- LOGOUT MODAL -->
+    <div class="logout-modal" id="logoutModal">
+      <div class="logout-box">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout?</p>
+        <div class="logout-actions">
+          <button class="btn cancel-btn" id="cancelLogout">Cancel</button>
+          <button class="btn confirm-btn" id="confirmLogout">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
